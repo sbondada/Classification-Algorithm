@@ -1,1 +1,1 @@
-Classification ALgorithm
+Classification Algorithm
