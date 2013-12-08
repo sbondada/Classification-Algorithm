@@ -14,9 +14,15 @@ def loaddata(filename):
 		sp=line.split("\t")
 		for word in sp:
 			tempval.append(float(word))
-		global trainpoint_list
-		trainpoint_list.append(tempval)
-			
+		global point_list
+		point_list.append(tempval)
+
+def normalizedata():
+	global point_list
+	for j in range(len(point_list[0])):	
+		for i in range(len(point_list)):
+			point_list[i][j]=(point_list[i][j]-min(zip(*point_list)[j]))/(max(zip(*point_list)[j])-min(zip(*point_list)[j])) #normalizing the data in the range of (0,1)
+
 def distance(x,y,dtype):
 	if(dtype=='euclidean'):
 		sumsq=0
@@ -52,11 +58,14 @@ def findclass(neighbourlist,testpoint):
 		return sorted_majoritylist[0][0]
 	
 if __name__ == '__main__':
-	global trainpoint_list
-	trainpoint_list=[]
+	global point_list
+	point_list=[]
 	loaddata('/home/kaushal/Ubuntu One/subjects/semester_3/DATA_MINING/project3/project3_dataset1.txt')
-	templist=copy.deepcopy(trainpoint_list[3:20])
-	emp=nearest_neighbour(templist,trainpoint_list[2],4)
+	normalizedata()
+	print max(max(point_list,key=lambda x:max(x)))
+	trainpoint_list=copy.deepcopy(point_list[3:20])
+	testpoint_list=copy.deepcopy(point_list[20:40])
+	emp=nearest_neighbour(trainpoint_list,testpoint_list[2],4)
 	print emp
-	clas=findclass(emp,trainpoint_list[2])
+	clas=findclass(emp,testpoint_list[2])
 	print clas
