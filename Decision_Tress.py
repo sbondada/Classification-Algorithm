@@ -48,20 +48,20 @@ class Node:
 class Tree:
     def __init__(self):
         self.root=None
-        
+       
 def calculate_impuritygain(trainsplit_list,attribute_pos):
-    print "trainsplitlist size"+str(len(zip(*trainsplit_list)))
-    print "attribute pos"+str(attribute_pos)
+    #print "trainsplitlist size"+str(len(zip(*trainsplit_list)))
+    #print "attribute pos"+str(attribute_pos)
     attributeval_list=zip(*trainsplit_list)[attribute_pos]
     #print "attribute value list sum "+str(sum(attributeval_list))  #finds the sum of the columns but may cause error because sum cannot be performed for strings
-    print "attribute value list"+str(attributeval_list)
+    #print "attribute value list"+str(attributeval_list)
     label_list=zip(*trainsplit_list)[-1]
     #print sum(label_list)
-    print "label list"+str(label_list)
+    #print "label list"+str(label_list)
     distinctattrval=sorted(set(attributeval_list))
-    print "distinct attr val"+str(distinctattrval)
+    #print "distinct attr val"+str(distinctattrval)
     root_impurity=calculate_impurity(label_list)
-    print "root impurity"+str(root_impurity)
+    #print "root impurity"+str(root_impurity)
     attrsplitval_impurity_list=[]
     attrsplit_labellist=[]
     for val in distinctattrval:
@@ -74,7 +74,7 @@ def calculate_impuritygain(trainsplit_list,attribute_pos):
         attrsplit_labellist.append(templabel_list)
         #print "templabel_list"+str(sum(templabel_list))
         tempsplitval_impurity=calculate_impurity(templabel_list)
-        print "tempsplit_impurity"+str(tempsplitval_impurity)
+        #print "tempsplit_impurity"+str(tempsplitval_impurity)
         attrsplitval_impurity_list.append(tempsplitval_impurity)
     totalsplit_impurity=0
     for i in range(len(attrsplitval_impurity_list)):
@@ -91,7 +91,7 @@ def calculate_impurity(label_list):
         else:
             countkeeper[i]+=1
     sqsum=0
-    print "label dict"+str(countkeeper)
+    #print "label dict"+str(countkeeper)
     for pair in countkeeper.items():
         sqsum+=(float(pair[1])/len(label_list))**2
     impurity=0.5*(1-sqsum)
@@ -106,16 +106,15 @@ def CART(temptrain_list,attribute_list):
     for i in range(len(attribute_list)):
         if attribute_list[i] != 0:
             tempdistinctattrval,tempgain=calculate_impuritygain(temptrain_list,i)
-            print "tempgain"+str(tempgain)
+            #print "tempgain"+str(tempgain)
             if tempgain>maxgain:
                 maxgain=tempgain
                 distinctattrval=tempdistinctattrval
                 pos=i
-    print "position max"+str(pos)
+    #print "position max"+str(pos)
     if maxgain>treegrowing_threshold and maxgain!=0 and pos!=-1:
         attribute_list[pos]=0
         treenode=Node(getmajoritylabel(temptrain_list))
-        print "-------------------------------------------------"+str(treenode)
         treenode.value=pos
         #for j in range(len(disinctattrval)):    #use only if the code supports more than a single split and update the class structure instead of accepting left and right its prefered to accept an
         #dictionary where the keys are the values of the attributeval and value is the node reference to the code
@@ -173,6 +172,47 @@ def getclasslabel(treenode,item):
     else:
         return treenode.majoritylabel
 
+def calculate_confusionlist(actual_labellist,predicted_labellist):
+    TP , FN , FP , TN = 0 , 0 , 0 , 0
+    for inc in range(len(predicted_labellist)):
+        if actual_labellist[inc]==1.0:
+            if predicted_labellist[inc]==1.0:
+               TP+=1
+            elif predicted_labellist[inc]==0.0:
+                FN+=1
+        elif actual_labellist[inc]==0.0:
+            if predicted_labellist[inc]==1.0:
+                FP+=1
+            if predicted_labellist[inc]==0.0:
+                TN+=1
+    return list((TP,FN,FP,TN)) 
+
+def calculateperformancemetric(confusion_list,metric):
+    a,b,c,d=(confusion_list)
+    if metric=="accuracy":
+        accuracy=float(a+d)/(a+b+c+d)
+        return accuracy
+    if metric=="precision":
+        try:
+            precision=float(a)/(a+c)
+        except:
+            precision=None
+        return precision
+    if metric=="recall":
+        recall=float(a)/(a+b)
+        return recall
+    if metric=="fmeasure":
+        try:
+            p=float(a)/(a+c)
+        except:
+            p=None
+        r=float(a)/(a+b)
+        if p!=None:
+            fmeasure=float(2*r*p)/(r+p)
+        else:
+            fmeasure=None
+        return fmeasure
+
 if __name__=="__main__":
     global point_list,treegrowing_threshold
     point_list=[]
@@ -182,18 +222,49 @@ if __name__=="__main__":
     discretize(k)
     attribute_list=[1]*(len(point_list[0])-1)
     treegrowing_threshold=0.003
-    f=open('output.txt','w')
+    #f=open('output.txt','w')
     for value in point_list:
-        f.write(str(value)+"\n\n")
+        #f.write(str(value)+"\n\n")
         print str(value)+"\n"
-    f.close
+    #f.close
     maintree = Tree()
-    trainpoint_list=point_list[0:200]
-    testpoint_list=point_list[200:]
-    testpoint=point_list[234]
-    maintree.root=CART(point_list,attribute_list)
-    print "maintree root"+str(maintree.root)
-    #print calculate_impuritygain(point_list,2)
-    for loopc in testpoint_list:
-        label=getclasslabel(maintree.root,loopc)
-        print label
+    looplist=range(0,len(point_list),len(point_list)/10)
+    looplist.pop(-1)
+    looplist.append(len(point_list))
+    accuracylist=[]
+    precisionlist=[]
+    recalllist=[]
+    fmeasurelist=[]
+    for inc in range(len(looplist)-1):
+        trainpoint_list_first=point_list[:looplist[inc]]
+        testpoint_list=point_list[looplist[inc]:looplist[inc+1]]
+        trainpoint_list_second=point_list[looplist[inc+1]:]
+        trainpoint_list=trainpoint_list_first+trainpoint_list_second
+        #print "length of the test set"+str(len(testpoint_list))
+        maintree.root=CART(point_list,attribute_list)
+        #print "maintree root"+str(maintree.root)
+        #print calculate_impuritygain(point_list,2)
+        predictedlabellist=[]
+        for testitem in testpoint_list:
+            predictedlabel=getclasslabel(maintree.root,testitem)
+            #print str(predictedlabel)+"---"+str(testitem[-1])
+            predictedlabellist.append(predictedlabel)
+        confusionlist=calculate_confusionlist(list(zip(*testpoint_list)[-1]),predictedlabellist)
+        accuracylist.append(calculateperformancemetric(confusionlist,"accuracy"))
+        precisionlist.append(calculateperformancemetric(confusionlist,"precision"))
+        recalllist.append(calculateperformancemetric(confusionlist,"recall"))
+        fmeasurelist.append(calculateperformancemetric(confusionlist,"fmeasure"))
+    print "accuracy for each fold "+str(accuracylist)
+    print "average accuracy"+str(float(sum(accuracylist))/len(accuracylist))
+    print "precision for each fold " + str(precisionlist)
+    print "recall for each fold " + str(recalllist)
+    print "fmeasure for each fold "+ str(fmeasurelist)
+
+
+
+
+
+
+
+
+
