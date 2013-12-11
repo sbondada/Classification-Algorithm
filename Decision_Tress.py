@@ -199,24 +199,24 @@ def calculateperformancemetric(confusion_list,metric):
             precision=None
         return precision
     if metric=="recall":
-        recall=float(a)/(a+b)
+        try:
+            recall=float(a)/(a+b)
+        except:
+            recall=None
         return recall
     if metric=="fmeasure":
         try:
             p=float(a)/(a+c)
-        except:
-            p=None
-        r=float(a)/(a+b)
-        if p!=None:
+            r=float(a)/(a+b)
             fmeasure=float(2*r*p)/(r+p)
-        else:
+        except:
             fmeasure=None
         return fmeasure
 
 if __name__=="__main__":
     global point_list,treegrowing_threshold
     point_list=[]
-    loaddata('/home/kaushal/Ubuntu One/subjects/semester_3/DATA_MINING/project3/project3_dataset2.txt')
+    loaddata('/home/kaushal/Ubuntu One/subjects/semester_3/DATA_MINING/project3/project3_dataset1.txt')
     normalizedata()
     k=[2]*(len(point_list[0])-1)
     discretize(k)
