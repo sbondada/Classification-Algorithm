@@ -37,10 +37,11 @@ def discretize(klist):
                         break
 
 class Node:
-    def __init__(self,value):   
+    def __init__(self,majoritylabel):   
         self.left=None
         self.right=None
-        self.value=value
+        self.value=None
+        self.majoritylabel=majoritylabel
         self.left_value=None
         self.right_value=None
 
@@ -96,7 +97,7 @@ def calculate_impurity(label_list):
     impurity=0.5*(1-sqsum)
     return impurity
         
-def CART(temptrain_list,attribute_list,treenode):
+def CART(temptrain_list,attribute_list):
     print "hi"
     global treegrowing_threshold
     maxgain=0
@@ -111,14 +112,17 @@ def CART(temptrain_list,attribute_list,treenode):
                 distinctattrval=tempdistinctattrval
                 pos=i
     print "position max"+str(pos)
-    if maxgain>=treegrowing_threshold and maxgain!=0 and pos!=-1:
+    if maxgain>treegrowing_threshold and maxgain!=0 and pos!=-1:
         attribute_list[pos]=0
-        treenode=Node(pos)
+        treenode=Node(getmajoritylabel(temptrain_list))
+        print "-------------------------------------------------"+str(treenode)
+        treenode.value=pos
         #for j in range(len(disinctattrval)):    #use only if the code supports more than a single split and update the class structure instead of accepting left and right its prefered to accept an
         #dictionary where the keys are the values of the attributeval and value is the node reference to the code
         if len(distinctattrval)==1:
             treenode.left_value=distinctattrval[0]
-        if len(distinctattrval)==2:
+        elif len(distinctattrval)==2:
+            treenode.left_value=distinctattrval[0]
             treenode.right_value=distinctattrval[1]
         lefttrainlist=[]
         righttrainlist=[]
@@ -127,16 +131,47 @@ def CART(temptrain_list,attribute_list,treenode):
             if len(distinctattrval)==1:
                 if items[pos]==distinctattrval[0]:
                     lefttrainlist.append(items)
-            if len(distinctattrval)==2:
-                if items[pos]==distinctattrval[1]:
+            elif len(distinctattrval)==2:
+                if items[pos]==distinctattrval[0]:
+                    lefttrainlist.append(items)
+                elif items[pos]==distinctattrval[1]:
                     righttrainlist.append(items)
         #print "copy list size"+str(len(copy.deepcopy(attribute_list)))
         if len(lefttrainlist)!=0:
-            CART(lefttrainlist,copy.deepcopy(attribute_list),treenode.left)
+            treenode.left=CART(lefttrainlist,copy.deepcopy(attribute_list))
         if len(righttrainlist)!=0:
-            CART(righttrainlist,copy.deepcopy(attribute_list),treenode.right)
+            treenode.right=CART(righttrainlist,copy.deepcopy(attribute_list))
+        return treenode
 #need to add the limiting condition to the recursion and either modify the class node structure or hardcode the values for just the binary values
+    else:
+        treenode=Node(getmajoritylabel(temptrain_list))
+        return treenode
 
+def getmajoritylabel(item_list):
+    final_label_list=zip(*item_list)[-1]
+    label_counter_dict={}
+    for label in final_label_list:
+        if label not in label_counter_dict:
+            label_counter_dict[label]=1
+        else:
+            label_counter_dict[label]+=1
+    majoritylabel_dict=sorted(label_counter_dict.items(),key=lambda x:x[1],reverse=True)
+    print "majoritylabel_dict"+str(majoritylabel_dict)
+    return majoritylabel_dict[0][0] 
+
+def getclasslabel(treenode,item):
+    if treenode.value!=None:
+        pos=treenode.value
+        if treenode.left_value==item[pos]:
+            majoritylabel=getclasslabel(treenode.left,item)
+            return majoritylabel
+        if treenode.right_value==item[pos]:
+            majoritylabel=getclasslabel(treenode.right,item)
+            return majoritylabel
+        else:
+            return treenode.majoritylabel
+    else:
+        return treenode.majoritylabel
 
 if __name__=="__main__":
     global point_list,treegrowing_threshold
@@ -153,5 +188,12 @@ if __name__=="__main__":
         print str(value)+"\n"
     f.close
     maintree = Tree()
-    CART(point_list,attribute_list,maintree.root)
+    trainpoint_list=point_list[0:200]
+    testpoint_list=point_list[200:]
+    testpoint=point_list[234]
+    maintree.root=CART(point_list,attribute_list)
+    print "maintree root"+str(maintree.root)
     #print calculate_impuritygain(point_list,2)
+    for loopc in testpoint_list:
+        label=getclasslabel(maintree.root,loopc)
+        print label
