@@ -287,19 +287,19 @@ if __name__=="__main__":
         precisionlist.append(calculateperformancemetric(confusionlist,"precision"))
         recalllist.append(calculateperformancemetric(confusionlist,"recall"))
         fmeasurelist.append(calculateperformancemetric(confusionlist,"fmeasure"))
-        print "\n\n"
-        print "Discretisation value "+str(discsplitvalue)
-        print "Random tree selection value "+str(nooftrees)
-        print "Random attribute selectiuon value "+str(randomattrsel)
-        print "\n\n-------------------------------preformance metric values----------------------------------\n\n"
-        #print "Accuracy for each fold "+str(accuracylist)
-        print "Average accuracy "+str(average(accuracylist))
-        #print "Precision for each fold " + str(precisionlist)
-        print "Average precion " +str(average(precisionlist)) 
-        #print "Recall for each fold " + str(recalllist)
-        print "Average Recall " +str(average(recalllist))
-        #print "Fmeasure for each fold "+ str(fmeasurelist)
-        print "Average fmeasure "+str(average(fmeasurelist))
+    print "\n\n"
+    print "Discretisation value "+str(discsplitvalue)
+    print "Random tree selection value "+str(nooftrees)
+    print "Random attribute selectiuon value "+str(randomattrsel)
+    print "\n\n-------------------------------preformance metric values----------------------------------\n\n"
+    #print "Accuracy for each fold "+str(accuracylist)
+    print "Average accuracy "+str(average(accuracylist))
+    #print "Precision for each fold " + str(precisionlist)
+    print "Average precion " +str(average(precisionlist)) 
+    #print "Recall for each fold " + str(recalllist)
+    print "Average Recall " +str(average(recalllist))
+    #print "Fmeasure for each fold "+ str(fmeasurelist)
+    print "Average fmeasure "+str(average(fmeasurelist))
 
 
 
