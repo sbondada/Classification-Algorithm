@@ -159,19 +159,14 @@ def getmajoritylabel(item_list):
     print "majoritylabel_dict"+str(majoritylabel_dict)
     return majoritylabel_dict[0][0] 
 
-def getclasslabel(treenode,item):
+def getdecisiontree(treenode):
     if treenode.value!=None:
-        pos=treenode.value
-        if treenode.left_value==item[pos]:
-            majoritylabel=getclasslabel(treenode.left,item)
-            return majoritylabel
-        if treenode.right_value==item[pos]:
-            majoritylabel=getclasslabel(treenode.right,item)
-            return majoritylabel
-        else:
-            return treenode.majoritylabel
+        print "NOde---"+str(treenode.value)
+        print "EDge---"+str(treenode.left_value)+"\t"+"EDge---"+str(treenode.right_value)
+        getdecisiontree(treenode.left)
+        getdecisiontree(treenode.right)
     else:
-        return treenode.majoritylabel
+        print "LEaf---"+str(treenode.majoritylabel)
 
 def calculate_confusionlist(actual_labellist,predicted_labellist):
     TP , FN , FP , TN = 0 , 0 , 0 , 0
@@ -227,19 +222,12 @@ def average(inputlist):
 if __name__=="__main__":
     global point_list,treegrowing_threshold
     point_list=[]
-    loaddata('datasets/project3_dataset3_train.txt')
+    loaddata('datasets/project3_dataset4_modified.txt')
     normalizedata() 
     discsplitval=2
     klist=[discsplitval]*(len(point_list[0])-1)
     discretize(klist)
     trainpoint_list=point_list
-    point_list=[]
-    loaddata('datasets/project3_dataset3_test.txt')
-    normalizedata() 
-    discsplitval=2
-    klist=[discsplitval]*(len(point_list[0])-1)
-    discretize(klist)
-    testpoint_list=point_list
     attribute_list=[1]*(len(point_list[0])-1)
     treegrowing_threshold=0.01
     #f=open('output.txt','w')
@@ -249,24 +237,6 @@ if __name__=="__main__":
     #f.close
     maintree = Tree()
     maintree.root=CART(trainpoint_list,attribute_list)
-    predictedlabellist=[]
-    for testitem in testpoint_list:
-        predictedlabel=getclasslabel(maintree.root,testitem)
-        #print str(predictedlabel)+"---"+str(testitem[-1])
-        predictedlabellist.append(predictedlabel)
-    confusionlist=calculate_confusionlist(list(zip(*testpoint_list)[-1]),predictedlabellist)
-    print "\n\n"
-    print "discretization value "+str(discsplitval)
-    print "three growing threshold "+str(treegrowing_threshold)
-    print "K value "+str(klist)
-    print "\n\n-------------------------------preformance metric values----------------------------------\n\n"
-    #print "Accuracy for each fold "+str(accuracylist)
-    print "Average accuracy "+str(calculateperformancemetric(confusionlist,"accuracy"))
-    #print "Precision for each fold " + str(precisionlist)
-    print "Average precion " +str(calculateperformancemetric(confusionlist,"precision")) 
-    #print "Recall for each fold " + str(recalllist)
-    print "Average Recall " +str(calculateperformancemetric(confusionlist,"recall"))
-    #print "Fmeasure for each fold "+ str(fmeasurelist)
-    print "Average fmeasure "+str(calculateperformancemetric(confusionlist,"fmeasure"))
-
+    print "\n the tree in the preeorder format \n"
+    getdecisiontree(maintree.root)
 
