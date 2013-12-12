@@ -1,5 +1,4 @@
 import math
-import random
 import copy
 
 def loaddata(filename):
@@ -30,7 +29,6 @@ def discretize(klist):
         if type(zip(*point_list)[j][0]) is not str:#if its string doing nothing as they are already discritized
             xmin=min(zip(*point_list)[j])
             xmax=max(zip(*point_list)[j])
-            #print "k value" +str(klist)
             binwidth=(xmax-xmin)/klist[j]
             for i in range(len(point_list)):
                 for m in range(1,klist[j]+1):
@@ -58,10 +56,10 @@ def calculate_impuritygain(trainsplit_list,attribute_pos):
     #print "attribute value list sum "+str(sum(attributeval_list))  #finds the sum of the columns but may cause error because sum cannot be performed for strings
     #print "attribute value list"+str(attributeval_list)
     label_list=zip(*trainsplit_list)[-1]
-    print sum(label_list)
+    #print sum(label_list)
     #print "label list"+str(label_list)
     distinctattrval=sorted(set(attributeval_list))
-    print "distinct attr val"+str(distinctattrval)
+    #print "distinct attr val"+str(distinctattrval)
     root_impurity=calculate_impurity(label_list)
     #print "root impurity"+str(root_impurity)
     attrsplitval_impurity_list=[]
@@ -98,32 +96,25 @@ def calculate_impurity(label_list):
         sqsum+=(float(pair[1])/len(label_list))**2
     impurity=0.5*(1-sqsum)
     return impurity
- 
-def randomforest(temptrainlist,attribute_list,k):
-    print "attribute list "+str(attribute_list)
+        
+def CART(temptrain_list,attribute_list):
+    print "entered CART"
+    global treegrowing_threshold
     maxgain=0
     distinctattrval=[]
     pos=-1
-    selattributelist=[]
-    tempattribute_list=copy.deepcopy(attribute_list)
-    for i in range(k):
-        while sorted(set(tempattribute_list))[0]==0: 
-            m=random.randint(0,len(attribute_list)-1)
-            if (tempattribute_list[m]==0 and m not in selattributelist):
-                selattributelist.append(m)
-                tempattribute_list[m]=1
-                break
-    print "random select attribute "+str(selattributelist)
-    for attrpos in selattributelist:
-        tempdistinctattrval,tempgain=calculate_impuritygain(temptrainlist,attrpos)
-        if tempgain>maxgain:
-            maxgain=tempgain
-            distinctattrval=tempdistinctattrval
-            pos=attrpos
-    print "maxgain "+str(maxgain) + " position "+str(pos)
-    if maxgain!=0 and pos!=-1:
-        attribute_list[pos]=1
-        treenode=Node(getmajoritylabel(temptrainlist))
+    for i in range(len(attribute_list)):
+        if attribute_list[i] != 0:
+            tempdistinctattrval,tempgain=calculate_impuritygain(temptrain_list,i)
+            #print "tempgain"+str(tempgain)
+            if tempgain>maxgain:
+                maxgain=tempgain
+                distinctattrval=tempdistinctattrval
+                pos=i
+    #print "position max"+str(pos)
+    if maxgain>treegrowing_threshold and maxgain!=0 and pos!=-1:
+        attribute_list[pos]=0
+        treenode=Node(getmajoritylabel(temptrain_list))
         treenode.value=pos
         #for j in range(len(disinctattrval)):    #use only if the code supports more than a single split and update the class structure instead of accepting left and right its prefered to accept an
         #dictionary where the keys are the values of the attributeval and value is the node reference to the code
@@ -134,7 +125,7 @@ def randomforest(temptrainlist,attribute_list,k):
             treenode.right_value=distinctattrval[1]
         lefttrainlist=[]
         righttrainlist=[]
-        for items in temptrainlist:
+        for items in temptrain_list:
             #print "items "+str(items[pos])+" distinct attr val "+str(disinctattrval[0])            
             if len(distinctattrval)==1:
                 if items[pos]==distinctattrval[0]:
@@ -146,13 +137,13 @@ def randomforest(temptrainlist,attribute_list,k):
                     righttrainlist.append(items)
         #print "copy list size"+str(len(copy.deepcopy(attribute_list)))
         if len(lefttrainlist)!=0:
-            treenode.left=randomforest(lefttrainlist,copy.deepcopy(attribute_list),k)
+            treenode.left=CART(lefttrainlist,copy.deepcopy(attribute_list))
         if len(righttrainlist)!=0:
-            treenode.right=randomforest(righttrainlist,copy.deepcopy(attribute_list),k)
+            treenode.right=CART(righttrainlist,copy.deepcopy(attribute_list))
         return treenode
 #need to add the limiting condition to the recursion and either modify the class node structure or hardcode the values for just the binary values
     else:
-        treenode=Node(getmajoritylabel(temptrainlist))
+        treenode=Node(getmajoritylabel(temptrain_list))
         return treenode
 
 def getmajoritylabel(item_list):
@@ -180,18 +171,6 @@ def getclasslabel(treenode,item):
             return treenode.majoritylabel
     else:
         return treenode.majoritylabel
-
-def getmajorityclasslabel(randomtreelist,item):
-    classlabeldict={}
-    for i in range(len(randomtreelist)):
-        #print "random tree list nodes"+str(randomtreelist[i].root)
-        label=getclasslabel(randomtreelist[i].root,item)
-        if label not in classlabeldict:
-            classlabeldict[label]=1
-        else:
-            classlabeldict[label]+=1
-    majoritylabelset=classlabeldict.items()
-    return majoritylabelset[0][0]
 
 def calculate_confusionlist(actual_labellist,predicted_labellist):
     TP , FN , FP , TN = 0 , 0 , 0 , 0
@@ -243,67 +222,50 @@ def average(inputlist):
             count+=1
     return float(listsum)/count
 
+
 if __name__=="__main__":
     global point_list,treegrowing_threshold
     point_list=[]
-    loaddata('/home/kaushal/Ubuntu One/subjects/semester_3/DATA_MINING/project3/project3_dataset1.txt')
+    loaddata('datasets/project3_dataset3_train.txt')
     normalizedata() 
-    discsplitvalue=2
-    k=[discsplitvalue]*(len(point_list[0])-1)
-    discretize(k)
-    attribute_list=[0]*(len(point_list[0])-1)
+    discsplitval=2
+    klist=[discsplitval]*(len(point_list[0])-1)
+    discretize(klist)
+    trainpoint_list=point_list
+    point_list=[]
+    loaddata('datasets/project3_dataset3_test.txt')
+    normalizedata() 
+    discsplitval=2
+    klist=[discsplitval]*(len(point_list[0])-1)
+    discretize(klist)
+    testpoint_list=point_list
+    attribute_list=[1]*(len(point_list[0])-1)
+    treegrowing_threshold=0.01
     #f=open('output.txt','w')
     for value in point_list:
         #f.write(str(value)+"\n\n")
         print str(value)+"\n"
     #f.close
-    nooftrees=3
-    randomattrsel=3
-    looplist=range(0,len(point_list),len(point_list)/10)
-    looplist.pop(-1)
-    looplist.append(len(point_list))
-    accuracylist=[]
-    precisionlist=[]
-    recalllist=[]
-    fmeasurelist=[]
-    for inc in range(len(looplist)-1):
-        trainpoint_list_first=point_list[:looplist[inc]]
-        testpoint_list=point_list[looplist[inc]:looplist[inc+1]]
-        trainpoint_list_second=point_list[looplist[inc+1]:]
-        trainpoint_list=trainpoint_list_first+trainpoint_list_second
-        #print "length of the test set"+str(len(testpoint_list))
-        randomtrees=[]
-        for i in range(nooftrees):
-            randomtrees.append(Tree())
-            randomtrees[i].root=randomforest(trainpoint_list,copy.deepcopy(attribute_list),randomattrsel)
-            print "random list root values "+str(randomtrees[i].root)
-        predictedlabellist=[]
-        for testitem in testpoint_list:
-            predictedlabel=getmajorityclasslabel(randomtrees,testitem)
-            #print str(predictedlabel)+"---"+str(testitem[-1])
-            predictedlabellist.append(predictedlabel)
-        confusionlist=calculate_confusionlist(list(zip(*testpoint_list)[-1]),predictedlabellist)
-        accuracylist.append(calculateperformancemetric(confusionlist,"accuracy"))
-        precisionlist.append(calculateperformancemetric(confusionlist,"precision"))
-        recalllist.append(calculateperformancemetric(confusionlist,"recall"))
-        fmeasurelist.append(calculateperformancemetric(confusionlist,"fmeasure"))
+    maintree = Tree()
+    maintree.root=CART(trainpoint_list,attribute_list)
+    predictedlabellist=[]
+    for testitem in testpoint_list:
+        predictedlabel=getclasslabel(maintree.root,testitem)
+        #print str(predictedlabel)+"---"+str(testitem[-1])
+        predictedlabellist.append(predictedlabel)
+    confusionlist=calculate_confusionlist(list(zip(*testpoint_list)[-1]),predictedlabellist)
     print "\n\n"
-    print "Discretisation value "+str(discsplitvalue)
-    print "Random tree selection value "+str(nooftrees)
-    print "Random attribute selectiuon value "+str(randomattrsel)
+    print "discretization value "+str(discsplitval)
+    print "three growing threshold "+str(treegrowing_threshold)
+    print "K value "+str(klist)
     print "\n\n-------------------------------preformance metric values----------------------------------\n\n"
     #print "Accuracy for each fold "+str(accuracylist)
-    print "Average accuracy "+str(average(accuracylist))
+    print "Average accuracy "+str(calculateperformancemetric(confusionlist,"accuracy"))
     #print "Precision for each fold " + str(precisionlist)
-    print "Average precion " +str(average(precisionlist)) 
+    print "Average precion " +str(calculateperformancemetric(confusionlist,"precision")) 
     #print "Recall for each fold " + str(recalllist)
-    print "Average Recall " +str(average(recalllist))
+    print "Average Recall " +str(calculateperformancemetric(confusionlist,"recall"))
     #print "Fmeasure for each fold "+ str(fmeasurelist)
-    print "Average fmeasure "+str(average(fmeasurelist))
-
-
-
-
-
+    print "Average fmeasure "+str(calculateperformancemetric(confusionlist,"fmeasure"))
 
 

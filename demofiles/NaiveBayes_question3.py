@@ -267,13 +267,14 @@ if __name__ == '__main__':
         testMethod(testData)
         #testLines = open(testFilename).read().splitlines()
     '''
-    trainFilename= sys.argv[1]
+    #trainFilename= sys.argv[1]
+    trainFilename="datasets/project3_dataset4.txt"
     trainLines = open(trainFilename).read().splitlines()
     
     driver(trainLines)
     
-    testFilename= sys.argv[2]
-    
+    #testFilename= sys.argv[2]
+    testFilename="datasets/project3_dataset4.txt" 
     testLines= ["sunny\tcool\thigh\tstrong\t0"]
     
     testMethod(testLines)

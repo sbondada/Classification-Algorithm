@@ -122,42 +122,31 @@ def average(inputlist):
 if __name__ == '__main__':
     global point_list
     point_list=[]
-    loaddata('/home/kaushal/Ubuntu One/subjects/semester_3/DATA_MINING/project3/project3_dataset2.txt')
+    loaddata('datasets/project3_dataset3_train.txt')
     normalizedata()
+    trainpoint_list=point_list
+    point_list=[]
+    loaddata('datasets/project3_dataset3_test.txt')
+    normalizedata()
+    testpoint_list=point_list
     #print max(max(point_list,key=lambda x:max(x)))
-    k=5
-    looplist=range(0,len(point_list),len(point_list)/10)
-    looplist.pop(-1)
-    looplist.append(len(point_list))
-    accuracylist=[]
-    precisionlist=[]
-    recalllist=[]
-    fmeasurelist=[]
-    for inc in range(len(looplist)-1):
-        trainpoint_list_first=point_list[:looplist[inc]]
-        testpoint_list=point_list[looplist[inc]:looplist[inc+1]]
-        trainpoint_list_second=point_list[looplist[inc+1]:]
-        trainpoint_list=trainpoint_list_first+trainpoint_list_second
-        predictedlabellist=[]
-        for testitem in testpoint_list:
-            nnlist=nearest_neighbour(copy.deepcopy(trainpoint_list),testitem,k)
-            predictedlabel=findclass(nnlist,testpoint_list[2])
-            predictedlabellist.append(predictedlabel)
-        confusionlist=calculate_confusionlist(list(zip(*testpoint_list)[-1]),predictedlabellist)
-        accuracylist.append(calculateperformancemetric(confusionlist,"accuracy"))
-        precisionlist.append(calculateperformancemetric(confusionlist,"precision"))
-        recalllist.append(calculateperformancemetric(confusionlist,"recall"))
-        fmeasurelist.append(calculateperformancemetric(confusionlist,"fmeasure"))
+    k=9
+    predictedlabellist=[]
+    for testitem in testpoint_list:
+        nnlist=nearest_neighbour(copy.deepcopy(trainpoint_list),testitem,k)
+        predictedlabel=findclass(nnlist,testpoint_list[2])
+        predictedlabellist.append(predictedlabel)
+    confusionlist=calculate_confusionlist(list(zip(*testpoint_list)[-1]),predictedlabellist)
     print "\n\n"
     print "K value "+str(k)
     print "\n\n-------------------------------preformance metric values----------------------------------\n\n"
     #print "Accuracy for each fold "+str(accuracylist)
-    print "Average accuracy "+str(average(accuracylist))
+    print "Average accuracy "+str(calculateperformancemetric(confusionlist,"accuracy"))
     #print "Precision for each fold " + str(precisionlist)
-    print "Average precion " +str(average(precisionlist)) 
+    print "Average precion " +str(calculateperformancemetric(confusionlist,"precision")) 
     #print "Recall for each fold " + str(recalllist)
-    print "Average Recall " +str(average(recalllist))
+    print "Average Recall " +str(calculateperformancemetric(confusionlist,"recall"))
     #print "Fmeasure for each fold "+ str(fmeasurelist)
-    print "Average fmeasure "+str(average(fmeasurelist))
+    print "Average fmeasure "+str(calculateperformancemetric(confusionlist,"fmeasure"))
 
 

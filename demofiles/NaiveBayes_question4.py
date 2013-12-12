@@ -262,12 +262,12 @@ if __name__ == '__main__':
         driver(trainData)
         testMethod(testData)
     '''
-    trainFilename= sys.argv[1]
+    trainFilename="datasets/project3_dataset3_train.txt"
     trainLines = open(trainFilename).read().splitlines()
     
     driver(trainLines)
     
-    testFilename= sys.argv[2]
+    testFilename="datasets/project3_dataset3_test.txt"
     testLines = open(testFilename).read().splitlines()
     testMethod(testLines)
     

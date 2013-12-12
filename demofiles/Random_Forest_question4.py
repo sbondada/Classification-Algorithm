@@ -246,61 +246,49 @@ def average(inputlist):
 if __name__=="__main__":
     global point_list,treegrowing_threshold
     point_list=[]
-    loaddata('/home/kaushal/Ubuntu One/subjects/semester_3/DATA_MINING/project3/project3_dataset1.txt')
+    loaddata('datasets/project3_dataset3_train.txt')
     normalizedata() 
-    discsplitvalue=2
-    k=[discsplitvalue]*(len(point_list[0])-1)
-    discretize(k)
+    discsplitval=2
+    klist=[discsplitval]*(len(point_list[0])-1)
+    discretize(klist)
+    trainpoint_list=point_list
+    print trainpoint_list
+    point_list=[]
+    loaddata('datasets/project3_dataset3_test.txt')
+    normalizedata() 
+    discsplitval=2
+    klist=[discsplitval]*(len(point_list[0])-1)
+    discretize(klist)
+    testpoint_list=point_list
+    print testpoint_list
     attribute_list=[0]*(len(point_list[0])-1)
-    #f=open('output.txt','w')
-    for value in point_list:
-        #f.write(str(value)+"\n\n")
-        print str(value)+"\n"
-    #f.close
-    nooftrees=3
-    randomattrsel=3
-    looplist=range(0,len(point_list),len(point_list)/10)
-    looplist.pop(-1)
-    looplist.append(len(point_list))
-    accuracylist=[]
-    precisionlist=[]
-    recalllist=[]
-    fmeasurelist=[]
-    for inc in range(len(looplist)-1):
-        trainpoint_list_first=point_list[:looplist[inc]]
-        testpoint_list=point_list[looplist[inc]:looplist[inc+1]]
-        trainpoint_list_second=point_list[looplist[inc+1]:]
-        trainpoint_list=trainpoint_list_first+trainpoint_list_second
-        #print "length of the test set"+str(len(testpoint_list))
-        randomtrees=[]
-        for i in range(nooftrees):
-            randomtrees.append(Tree())
-            randomtrees[i].root=randomforest(trainpoint_list,copy.deepcopy(attribute_list),randomattrsel)
-            print "random list root values "+str(randomtrees[i].root)
-        predictedlabellist=[]
-        for testitem in testpoint_list:
-            predictedlabel=getmajorityclasslabel(randomtrees,testitem)
-            #print str(predictedlabel)+"---"+str(testitem[-1])
-            predictedlabellist.append(predictedlabel)
-        confusionlist=calculate_confusionlist(list(zip(*testpoint_list)[-1]),predictedlabellist)
-        accuracylist.append(calculateperformancemetric(confusionlist,"accuracy"))
-        precisionlist.append(calculateperformancemetric(confusionlist,"precision"))
-        recalllist.append(calculateperformancemetric(confusionlist,"recall"))
-        fmeasurelist.append(calculateperformancemetric(confusionlist,"fmeasure"))
+    randomtrees=[]
+    nooftrees=5
+    randomattrsel=2
+    for i in range(nooftrees):
+        randomtrees.append(Tree())
+        randomtrees[i].root=randomforest(trainpoint_list,copy.deepcopy(attribute_list),randomattrsel)
+        print "random list root values "+str(randomtrees[i].root)
+    predictedlabellist=[]
+    for testitem in testpoint_list:
+        predictedlabel=getmajorityclasslabel(randomtrees,testitem)
+        #print str(predictedlabel)+"---"+str(testitem[-1])
+        predictedlabellist.append(predictedlabel)
+    confusionlist=calculate_confusionlist(list(zip(*testpoint_list)[-1]),predictedlabellist)
     print "\n\n"
-    print "Discretisation value "+str(discsplitvalue)
-    print "Random tree selection value "+str(nooftrees)
-    print "Random attribute selectiuon value "+str(randomattrsel)
+    print "discretization value "+str(discsplitval)
+    print "K value "+str(klist)
     print "\n\n-------------------------------preformance metric values----------------------------------\n\n"
     #print "Accuracy for each fold "+str(accuracylist)
-    print "Average accuracy "+str(average(accuracylist))
+    print "Average accuracy "+str(calculateperformancemetric(confusionlist,"accuracy"))
     #print "Precision for each fold " + str(precisionlist)
-    print "Average precion " +str(average(precisionlist)) 
+    print "Average precion " +str(calculateperformancemetric(confusionlist,"precision")) 
     #print "Recall for each fold " + str(recalllist)
-    print "Average Recall " +str(average(recalllist))
+    print "Average Recall " +str(calculateperformancemetric(confusionlist,"recall"))
     #print "Fmeasure for each fold "+ str(fmeasurelist)
-    print "Average fmeasure "+str(average(fmeasurelist))
+    print "Average fmeasure "+str(calculateperformancemetric(confusionlist,"fmeasure"))
 
+  
 
 
 
