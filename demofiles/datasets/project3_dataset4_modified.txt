@@ -1,0 +1,14 @@
+sunny	mild	high	weak	0
+sunny	cool	high	strong	0
+rain	mild	high	weak	1
+rain	mild	high	weak	1
+rain	cool	normal	weak	1
+rain	cool	normal	strong	0
+sunny	cool	normal	strong	1
+sunny	mild	high	weak	0
+sunny	cool	normal	weak	1
+rain	mild	normal	weak	1
+sunny	mild	normal	strong	1
+sunny	mild	high	strong	1
+rain	mild	normal	weak	1
+rain	mild	high	strong	0
