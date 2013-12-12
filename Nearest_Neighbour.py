@@ -1,7 +1,7 @@
 '''
 Created on Nov 25, 2013
-
-@author: kaushal
+@author: Navinder
+@author: Kaushal
 '''
 import math
 import copy
@@ -110,12 +110,22 @@ def calculateperformancemetric(confusion_list,metric):
             fmeasure=None
         return fmeasure
 
+def average(inputlist):
+    listsum=0
+    count=0
+    for i in range(len(inputlist)):
+        if inputlist[i]!=None:
+            listsum+=inputlist[i]
+            count+=1
+    return float(listsum)/count
+
 if __name__ == '__main__':
     global point_list
     point_list=[]
-    loaddata('/home/kaushal/Ubuntu One/subjects/semester_3/DATA_MINING/project3/project3_dataset1.txt')
+    loaddata('/home/kaushal/Ubuntu One/subjects/semester_3/DATA_MINING/project3/project3_dataset2.txt')
     normalizedata()
     #print max(max(point_list,key=lambda x:max(x)))
+    k=5
     looplist=range(0,len(point_list),len(point_list)/10)
     looplist.pop(-1)
     looplist.append(len(point_list))
@@ -130,7 +140,7 @@ if __name__ == '__main__':
         trainpoint_list=trainpoint_list_first+trainpoint_list_second
         predictedlabellist=[]
         for testitem in testpoint_list:
-            nnlist=nearest_neighbour(copy.deepcopy(trainpoint_list),testitem,5)
+            nnlist=nearest_neighbour(copy.deepcopy(trainpoint_list),testitem,k)
             predictedlabel=findclass(nnlist,testpoint_list[2])
             predictedlabellist.append(predictedlabel)
         confusionlist=calculate_confusionlist(list(zip(*testpoint_list)[-1]),predictedlabellist)
@@ -138,8 +148,16 @@ if __name__ == '__main__':
         precisionlist.append(calculateperformancemetric(confusionlist,"precision"))
         recalllist.append(calculateperformancemetric(confusionlist,"recall"))
         fmeasurelist.append(calculateperformancemetric(confusionlist,"fmeasure"))
-    print "accuracy for each fold "+str(accuracylist)
-    print "average accuracy"+str(float(sum(accuracylist))/len(accuracylist))
-    print "precision for each fold " + str(precisionlist)
-    print "recall for each fold " + str(recalllist)
-    print "fmeasure for each fold "+ str(fmeasurelist)
+    print "\n\n"
+    print "K value "+str(k)
+    print "\n\n-------------------------------preformance metric values----------------------------------\n\n"
+    #print "Accuracy for each fold "+str(accuracylist)
+    print "Average accuracy "+str(average(accuracylist))
+    #print "Precision for each fold " + str(precisionlist)
+    print "Average precion " +str(average(precisionlist)) 
+    #print "Recall for each fold " + str(recalllist)
+    print "Average Recall " +str(average(recalllist))
+    #print "Fmeasure for each fold "+ str(fmeasurelist)
+    print "Average fmeasure "+str(average(fmeasurelist))
+
+

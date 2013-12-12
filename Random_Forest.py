@@ -30,9 +30,10 @@ def discretize(klist):
         if type(zip(*point_list)[j][0]) is not str:#if its string doing nothing as they are already discritized
             xmin=min(zip(*point_list)[j])
             xmax=max(zip(*point_list)[j])
-            binwidth=(xmax-xmin)/k[j]
+            #print "k value" +str(klist)
+            binwidth=(xmax-xmin)/klist[j]
             for i in range(len(point_list)):
-                for m in range(1,k[j]+1):
+                for m in range(1,klist[j]+1):
                     if point_list[i][j] <= xmin+(m*binwidth):
                         point_list[i][j]=m
                         break
@@ -233,12 +234,22 @@ def calculateperformancemetric(confusion_list,metric):
             fmeasure=None
         return fmeasure
 
+def average(inputlist):
+    listsum=0
+    count=0
+    for i in range(len(inputlist)):
+        if inputlist[i]!=None:
+            listsum+=inputlist[i]
+            count+=1
+    return float(listsum)/count
+
 if __name__=="__main__":
     global point_list,treegrowing_threshold
     point_list=[]
     loaddata('/home/kaushal/Ubuntu One/subjects/semester_3/DATA_MINING/project3/project3_dataset1.txt')
-    normalizedata()
-    k=[2]*(len(point_list[0])-1)
+    normalizedata() 
+    discsplitvalue=2
+    k=[discsplitvalue]*(len(point_list[0])-1)
     discretize(k)
     attribute_list=[0]*(len(point_list[0])-1)
     #f=open('output.txt','w')
@@ -246,7 +257,8 @@ if __name__=="__main__":
         #f.write(str(value)+"\n\n")
         print str(value)+"\n"
     #f.close
-    nooftrees=1
+    nooftrees=3
+    randomattrsel=3
     looplist=range(0,len(point_list),len(point_list)/10)
     looplist.pop(-1)
     looplist.append(len(point_list))
@@ -263,7 +275,7 @@ if __name__=="__main__":
         randomtrees=[]
         for i in range(nooftrees):
             randomtrees.append(Tree())
-            randomtrees[i].root=randomforest(trainpoint_list,attribute_list,3)
+            randomtrees[i].root=randomforest(trainpoint_list,copy.deepcopy(attribute_list),randomattrsel)
             print "random list root values "+str(randomtrees[i].root)
         predictedlabellist=[]
         for testitem in testpoint_list:
@@ -275,11 +287,19 @@ if __name__=="__main__":
         precisionlist.append(calculateperformancemetric(confusionlist,"precision"))
         recalllist.append(calculateperformancemetric(confusionlist,"recall"))
         fmeasurelist.append(calculateperformancemetric(confusionlist,"fmeasure"))
-        print "accuracy for each fold "+str(accuracylist)
-        print "average accuracy"+str(float(sum(accuracylist))/len(accuracylist))
-        print "precision for each fold " + str(precisionlist)
-        print "recall for each fold " + str(recalllist)
-        print "fmeasure for each fold "+ str(fmeasurelist)
+    print "\n\n"
+    print "Discretisation value "+str(discsplitvalue)
+    print "Random tree selection value "+str(nooftrees)
+    print "Random attribute selectiuon value "+str(randomattrsel)
+    print "\n\n-------------------------------preformance metric values----------------------------------\n\n"
+    #print "Accuracy for each fold "+str(accuracylist)
+    print "Average accuracy "+str(average(accuracylist))
+    #print "Precision for each fold " + str(precisionlist)
+    print "Average precion " +str(average(precisionlist)) 
+    #print "Recall for each fold " + str(recalllist)
+    print "Average Recall " +str(average(recalllist))
+    #print "Fmeasure for each fold "+ str(fmeasurelist)
+    print "Average fmeasure "+str(average(fmeasurelist))
 
 
 

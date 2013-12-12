@@ -29,9 +29,9 @@ def discretize(klist):
         if type(zip(*point_list)[j][0]) is not str:#if its string doing nothing as they are already discritized
             xmin=min(zip(*point_list)[j])
             xmax=max(zip(*point_list)[j])
-            binwidth=(xmax-xmin)/k[j]
+            binwidth=(xmax-xmin)/klist[j]
             for i in range(len(point_list)):
-                for m in range(1,k[j]+1):
+                for m in range(1,klist[j]+1):
                     if point_list[i][j] <= xmin+(m*binwidth):
                         point_list[i][j]=m
                         break
@@ -98,7 +98,7 @@ def calculate_impurity(label_list):
     return impurity
         
 def CART(temptrain_list,attribute_list):
-    print "hi"
+    print "entered CART"
     global treegrowing_threshold
     maxgain=0
     distinctattrval=[]
@@ -213,13 +213,24 @@ def calculateperformancemetric(confusion_list,metric):
             fmeasure=None
         return fmeasure
 
+def average(inputlist):
+    listsum=0
+    count=0
+    for i in range(len(inputlist)):
+        if inputlist[i]!=None:
+            listsum+=inputlist[i]
+            count+=1
+    return float(listsum)/count
+
+
 if __name__=="__main__":
     global point_list,treegrowing_threshold
     point_list=[]
-    loaddata('/home/kaushal/Ubuntu One/subjects/semester_3/DATA_MINING/project3/project3_dataset1.txt')
+    loaddata('/home/kaushal/Ubuntu One/subjects/semester_3/DATA_MINING/project3/project3_dataset2.txt')
     normalizedata()
-    k=[2]*(len(point_list[0])-1)
-    discretize(k)
+    discsplitval=2
+    klist=[discsplitval]*(len(point_list[0])-1)
+    discretize(klist)
     attribute_list=[1]*(len(point_list[0])-1)
     treegrowing_threshold=0.003
     #f=open('output.txt','w')
@@ -241,7 +252,7 @@ if __name__=="__main__":
         trainpoint_list_second=point_list[looplist[inc+1]:]
         trainpoint_list=trainpoint_list_first+trainpoint_list_second
         #print "length of the test set"+str(len(testpoint_list))
-        maintree.root=CART(point_list,attribute_list)
+        maintree.root=CART(trainpoint_list,attribute_list)
         #print "maintree root"+str(maintree.root)
         #print calculate_impuritygain(point_list,2)
         predictedlabellist=[]
@@ -254,11 +265,18 @@ if __name__=="__main__":
         precisionlist.append(calculateperformancemetric(confusionlist,"precision"))
         recalllist.append(calculateperformancemetric(confusionlist,"recall"))
         fmeasurelist.append(calculateperformancemetric(confusionlist,"fmeasure"))
-    print "accuracy for each fold "+str(accuracylist)
-    print "average accuracy"+str(float(sum(accuracylist))/len(accuracylist))
-    print "precision for each fold " + str(precisionlist)
-    print "recall for each fold " + str(recalllist)
-    print "fmeasure for each fold "+ str(fmeasurelist)
+    print "\n\n"
+    print "Discretisation value "+str(discsplitval)
+    print "Tree growing threshold "+str(treegrowing_threshold)
+    print "\n\n-------------------------------preformance metric values----------------------------------\n\n"
+    #print "Accuracy for each fold "+str(accuracylist)
+    print "Average accuracy "+str(average(accuracylist))
+    #print "Precision for each fold " + str(precisionlist)
+    print "Average precion " +str(average(precisionlist)) 
+    #print "Recall for each fold " + str(recalllist)
+    print "Average Recall " +str(average(recalllist))
+    #print "Fmeasure for each fold "+ str(fmeasurelist)
+    print "Average fmeasure "+str(average(fmeasurelist))
 
 
 
